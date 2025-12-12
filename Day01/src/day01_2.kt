@@ -9,6 +9,8 @@ fun main() {
     .filter { it.isNotBlank() }
     .toTypedArray()
 
+  println("Using ${sequence.size} steps")
+
   val result = solveToPassword434C49434B(sequence, startPosition, wheelSize)
 
   println("Password is ${result.second}")
@@ -26,11 +28,13 @@ fun solveToPassword434C49434B(sequence: Array<String>, startPosition: Int, wheel
     current += stepValue
 
     when {
-      current < 0 ->
+      current < 0 -> {
         while (current < 0) {
           current += wheelSize
           if (currentWasZero) currentWasZero = false else zeroCount++
         }
+        if (current == 0) zeroCount++
+      }
 
       current >= wheelSize ->
         while (current >= wheelSize) {

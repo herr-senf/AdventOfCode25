@@ -1,5 +1,7 @@
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
+import org.junit.jupiter.params.ParameterizedTest
+import org.junit.jupiter.params.provider.CsvSource
 
 class Day01Test {
 
@@ -45,6 +47,42 @@ class Day01Test {
 
     assertEquals(10, result.second)
     assertEquals(50, result.first)
+  }
+
+  @Test
+  fun `simple around the wheel test`() {
+    val result = solveToPassword434C49434B(arrayOf("L463"), 0, 100)
+
+    assertEquals(37, result.first)
+    assertEquals(4, result.second)
+  }
+
+  @Test
+  fun `left full turn`() {
+    val result = solveToPassword434C49434B(arrayOf("L500"), 0, 100)
+
+    assertEquals(0, result.first)
+    assertEquals(5, result.second)
+  }
+
+  @Test
+  fun `right full turn`() {
+    val result = solveToPassword434C49434B(arrayOf("R500"), 0, 100)
+
+    assertEquals(0, result.first)
+    assertEquals(5, result.second)
+  }
+
+  @ParameterizedTest
+  @CsvSource(
+    "8,1",
+    "16,2",
+    "8000,1000"
+  )
+  fun `turn x times wheel size`(stepsize: Int, turns: Int) {
+    val result = solveToPassword434C49434B(arrayOf("R$stepsize"), 0, 8)
+
+    assertEquals(turns, result.second)
   }
 
   @Test
