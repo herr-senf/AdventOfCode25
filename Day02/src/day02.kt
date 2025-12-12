@@ -13,7 +13,7 @@ fun main() {
   println("There are ${invalids.size} invalids.")
 
   val sum = invalids.sumOf { it.toLong() }
-  println("There sum is ${sum}.")
+  println("Their sum is ${sum}.")
 }
 
 fun splitRange(string: String): Pair<Long, Long> {
