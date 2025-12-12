@@ -1,4 +1,3 @@
-import Day02_2Exercise.findInvalids
 import java.io.File
 
 fun main() {
