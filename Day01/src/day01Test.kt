@@ -38,4 +38,34 @@ class Day01Test {
     assertEquals(32, result.first)
     assertEquals(3, result.second)
   }
+
+  @Test
+  fun `use 434C49434B generation with R1000`() {
+    val result = solveToPassword434C49434B(arrayOf("R1000"), 50, 100)
+
+    assertEquals(10, result.second)
+    assertEquals(50, result.first)
+  }
+
+  @Test
+  fun solveTo434C49434B() {
+    val sequence: Array<String> =
+      arrayOf(
+        "L68",
+        "L30",
+        "R48",
+        "L5",
+        "R60",
+        "L55",
+        "L1",
+        "L99",
+        "R14",
+        "L82",
+      )
+
+    val result = solveToPassword434C49434B(sequence, 50, 100)
+
+    assertEquals(32, result.first)
+    assertEquals(6, result.second)
+  }
 }
