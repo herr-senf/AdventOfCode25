@@ -4,10 +4,7 @@ fun main() {
   val startPosition = 50
   val wheelSize = 100
 
-  val sequence = File("Day01/src/input.txt")
-    .readLines()
-    .filter { it.isNotBlank() }
-    .toTypedArray()
+  val sequence = readFileToSequence()
 
   println("Using ${sequence.size} steps")
 
@@ -17,34 +14,51 @@ fun main() {
 }
 
 fun solveToPassword434C49434B(sequence: Array<String>, startPosition: Int, wheelSize: Int): Pair<Int, Int> {
-  var current = startPosition
+  var position = startPosition
   var zeroCount = 0
 
-  for (step in sequence) {
-    val direction = if (step[0] == 'L') -1 else 1
-    val stepValue = step.substring(1).toInt() * direction
-
-    var currentWasZero = current == 0
-    current += stepValue
-
-    when {
-      current < 0 -> {
-        while (current < 0) {
-          current += wheelSize
-          if (currentWasZero) currentWasZero = false else zeroCount++
-        }
-        if (current == 0) zeroCount++
-      }
-
-      current >= wheelSize ->
-        while (current >= wheelSize) {
-          current -= wheelSize
-          zeroCount++
-        }
-
-      current == 0 -> zeroCount++
+  val regulateOverflow: () -> Unit = {
+    while (position >= wheelSize) {
+      position -= wheelSize
+      zeroCount++
     }
   }
 
-  return current to zeroCount
+  val regulateUnderflow: (Boolean) -> Unit = { positionWasZero ->
+    var temp = positionWasZero
+    while (position < 0) {
+      position += wheelSize
+      if (temp) temp = false else zeroCount++
+    }
+    if (position == 0) zeroCount++
+  }
+
+  for (step in sequence) {
+    val stepDelta = parseStepDelta(step)
+    val startedAtZero = position == 0
+
+    position += stepDelta
+
+    when {
+      position < 0 -> regulateUnderflow(startedAtZero)
+      position >= wheelSize -> regulateOverflow()
+      position == 0 -> zeroCount++
+    }
+  }
+
+  return position to zeroCount
+}
+
+private fun readFileToSequence(): Array<String> {
+  val sequence = File("Day01/src/input.txt")
+    .readLines()
+    .filter { it.isNotBlank() }
+    .toTypedArray()
+  return sequence
+}
+
+private fun parseStepDelta(step: String): Int {
+  val direction = if (step[0] == 'L') -1 else 1
+  val stepValue = step.substring(1).toInt() * direction
+  return stepValue
 }
