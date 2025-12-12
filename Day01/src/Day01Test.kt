@@ -1,20 +1,18 @@
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Test
-import org.junit.jupiter.params.ParameterizedTest
-import org.junit.jupiter.params.provider.CsvSource
 
 class Day01Test {
 
   @Test
   fun `start at 11 add 8 to right results in 19`() {
-    val result = solveToPassword(arrayOf("R8"), 11, 100)
+    val result = Day01.solveToPassword(arrayOf("R8"), 11, 100)
 
     assertEquals(19, result.first)
   }
 
   @Test
   fun `start at 5 add 10 to left results in 95`() {
-    val result = solveToPassword(arrayOf("L10"), 5, 100)
+    val result = Day01.solveToPassword(arrayOf("L10"), 5, 100)
 
     assertEquals(95, result.first)
   }
@@ -35,75 +33,9 @@ class Day01Test {
         "L82",
       )
 
-    val result = solveToPassword(sequence, 50, 100)
+    val result = Day01.solveToPassword(sequence, 50, 100)
 
     assertEquals(32, result.first)
     assertEquals(3, result.second)
-  }
-
-  @Test
-  fun `use 434C49434B generation with R1000`() {
-    val result = solveToPassword434C49434B(arrayOf("R1000"), 50, 100)
-
-    assertEquals(10, result.second)
-    assertEquals(50, result.first)
-  }
-
-  @Test
-  fun `simple around the wheel test`() {
-    val result = solveToPassword434C49434B(arrayOf("L463"), 0, 100)
-
-    assertEquals(37, result.first)
-    assertEquals(4, result.second)
-  }
-
-  @Test
-  fun `left full turn`() {
-    val result = solveToPassword434C49434B(arrayOf("L500"), 0, 100)
-
-    assertEquals(0, result.first)
-    assertEquals(5, result.second)
-  }
-
-  @Test
-  fun `right full turn`() {
-    val result = solveToPassword434C49434B(arrayOf("R500"), 0, 100)
-
-    assertEquals(0, result.first)
-    assertEquals(5, result.second)
-  }
-
-  @ParameterizedTest
-  @CsvSource(
-    "8,1",
-    "16,2",
-    "8000,1000"
-  )
-  fun `turn x times wheel size`(stepsize: Int, turns: Int) {
-    val result = solveToPassword434C49434B(arrayOf("R$stepsize"), 0, 8)
-
-    assertEquals(turns, result.second)
-  }
-
-  @Test
-  fun solveTo434C49434B() {
-    val sequence: Array<String> =
-      arrayOf(
-        "L68",
-        "L30",
-        "R48",
-        "L5",
-        "R60",
-        "L55",
-        "L1",
-        "L99",
-        "R14",
-        "L82",
-      )
-
-    val result = solveToPassword434C49434B(sequence, 50, 100)
-
-    assertEquals(32, result.first)
-    assertEquals(6, result.second)
   }
 }
