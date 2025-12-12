@@ -22,24 +22,24 @@ fun solveToPassword434C49434B(sequence: Array<String>, startPosition: Int, wheel
     val direction = if (step[0] == 'L') -1 else 1
     val stepValue = step.substring(1).toInt() * direction
 
-    var next = current + stepValue
+    var currentWasZero = current == 0
+    current += stepValue
+
     when {
-      next < 0 ->
-        while (next < 0) {
-          next += wheelSize
-          if (current != 0) zeroCount++
+      current < 0 ->
+        while (current < 0) {
+          current += wheelSize
+          if (currentWasZero) currentWasZero = false else zeroCount++
         }
 
-      next >= wheelSize ->
-        while (next >= wheelSize) {
-          next -= wheelSize
-          if (current != 0) zeroCount++
+      current >= wheelSize ->
+        while (current >= wheelSize) {
+          current -= wheelSize
+          zeroCount++
         }
 
-      next == 0 -> if (current != 0) zeroCount++
+      current == 0 -> zeroCount++
     }
-
-    current = next
   }
 
   return current to zeroCount
