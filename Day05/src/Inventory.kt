@@ -1,6 +1,8 @@
 class Inventory(lines: List<String>) {
 
-  private val freshIngredients = mutableListOf<LongRange>()
+  private val _freshIngredients = mutableListOf<LongRange>()
+  val freshIngredients: List<LongRange>
+    get() = _freshIngredients
   private val ingredientMap = mutableMapOf<Long, Boolean>()
 
   val ingredientCount: Int
@@ -12,7 +14,7 @@ class Inventory(lines: List<String>) {
     var line = iterator.next()
 
     while (line.isNotBlank()) {
-      freshIngredients += parseRange(line)
+      _freshIngredients += parseRange(line)
 
       line = iterator.next()
     }
@@ -21,7 +23,7 @@ class Inventory(lines: List<String>) {
       line = iterator.next()
       val id = line.toLong()
 
-      ingredientMap[id] = freshIngredients.any { it.contains(id) }
+      ingredientMap[id] = _freshIngredients.any { it.contains(id) }
     }
   }
 
@@ -37,4 +39,25 @@ class Inventory(lines: List<String>) {
 
   fun isFresh(id: Long): Boolean =
     ingredientMap[id] ?: false
+}
+
+object Combiner {
+
+  fun combine(ranges: List<LongRange>): List<LongRange> {
+    val result = mutableListOf<LongRange>()
+
+    for (range in ranges.sortedBy { it.first }) {
+      val containsLeft = result.firstOrNull { it.contains(range.first) || it.contains(range.first - 1) }
+
+      if (containsLeft != null) {
+        if (containsLeft.contains(range.last)) continue // the current range is completely contained, can be omitted
+
+        result.remove(containsLeft)
+        result += LongRange(containsLeft.first, range.last)
+      } else
+        result += range
+    }
+
+    return result.sortedBy { it.first }
+  }
 }
