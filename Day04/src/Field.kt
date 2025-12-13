@@ -42,6 +42,52 @@ class Field(private val input: List<String>) {
 
   fun isRemovable(x: Int, y: Int): Boolean =
     isRoll(x, y) && getNeighborCount(x, y) < 4
+
+  fun removeRolls(): Pair<Field, Int> {
+    val result = mutableListOf<String>()
+    var removed = 0
+
+    for (y in 0 until dimension.y) {
+      var row = ""
+      for (x in 0 until dimension.x) {
+        row += (
+          if (!isRoll(x, y))
+            '.'
+          else
+            if (isRemovable(x, y)) {
+              removed++
+              '.'
+            } else
+              '@'
+          )
+      }
+      result.add(row)
+    }
+
+    return Field(result.toList()) to removed
+  }
+
+  fun isEmpty(): Boolean =
+    input.all { row -> row.all { cell -> cell == '.' } }
+
+  companion object {
+    fun removeUntilSolid(field: Field): Triple<Field, Int, Int> {
+      var result = field
+      var iterations = 0
+      var removeCount = 0
+
+      while (result.countRemovableRolls() > 0) {
+        iterations++
+
+        val temp = result.removeRolls()
+
+        removeCount += temp.second
+        result = temp.first
+      }
+
+      return Triple(result, iterations, removeCount)
+    }
+  }
 }
 
 data class Dimension(val x: Int = 0, val y: Int = 0)
