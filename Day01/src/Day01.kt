@@ -13,9 +13,7 @@ object Day01 {
    * The function reads the input file located at `Day01/src/input.txt`,
    * filtering out blank lines and converting the remaining lines into an array.
    * It then calls [solveToPassword] with a starting position of 50 and a wheel size
-   * of 100. The result, a `Pair<Int, Int>`, is asserted to have the first element
-   * equal to 3. If the assertion fails an `AssertionError` is thrown; otherwise
-   * the result is printed to the console.
+   * of 100.
    *
    * The input file should contain movement steps such as "L5" or "R10", one per
    * line. Blank lines are ignored.
@@ -31,9 +29,7 @@ object Day01 {
 
     val result = solveToPassword(sequence, startPosition, wheelSize)
 
-    assert(result.first == 3) { "Result must be 3 but was $result" }
-
-    println("Result is $result")
+    println("Result is ${result.second}")
   }
 
   /**
