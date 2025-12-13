@@ -13,19 +13,22 @@ class Field(private val input: List<String>) {
 
   fun getNeighborCount(x: Int, y: Int): Int {
     return (0
-      + isRoll(x + 1, y) + isRoll(x - 1, y)
-      + isRoll(x, y + 1) + isRoll(x, y - 1)
-      + isRoll(x + 1, y + 1) + isRoll(x - 1, y + 1)
-      + isRoll(x + 1, y - 1) + isRoll(x - 1, y - 1)
+      + intRoll(x + 1, y) + intRoll(x - 1, y)
+      + intRoll(x, y + 1) + intRoll(x, y - 1)
+      + intRoll(x + 1, y + 1) + intRoll(x - 1, y + 1)
+      + intRoll(x + 1, y - 1) + intRoll(x - 1, y - 1)
       )
   }
 
-  private fun isRoll(x: Int, y: Int): Int {
-    if (x < 0 || x >= dimension.x) return 0
-    if (y < 0 || y >= dimension.y) return 0
+  private fun isRoll(x: Int, y: Int): Boolean {
+    if (x < 0 || x >= dimension.x) return false
+    if (y < 0 || y >= dimension.y) return false
 
-    return if (input[y][x] == '@') 1 else 0
+    return input[y][x] == '@'
   }
+
+  private fun intRoll(x: Int, y: Int): Int =
+    if (isRoll(x, y)) 1 else 0
 
   fun countRemovableRolls(): Int {
     var count = 0
@@ -38,7 +41,7 @@ class Field(private val input: List<String>) {
   }
 
   fun isRemovable(x: Int, y: Int): Boolean =
-    isRoll(x, y) == 1 && getNeighborCount(x, y) < 4
+    isRoll(x, y) && getNeighborCount(x, y) < 4
 }
 
 data class Dimension(val x: Int = 0, val y: Int = 0)
