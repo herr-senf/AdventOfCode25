@@ -19,6 +19,7 @@ AdventOfCode25/
 ```
 
 Each day folder contains:
+
 - Main solution file (e.g., `Day01.kt`)
 - Part 2 solution if different (e.g., `Day01_2.kt`)
 - Test files (e.g., `Day01Test.kt`)
@@ -34,6 +35,7 @@ Each day folder contains:
 4. Right-click the file and select "Run 'Day04Kt'"
 
 **Running Tests:**
+
 - Open the test file (e.g., `Day04Test.kt`)
 - Click the green play button next to the test class or individual test methods
 - Or right-click and select "Run 'Day04Test'"
@@ -41,7 +43,10 @@ Each day folder contains:
 ### Using Command Line
 
 #### Prerequisites
-- Kotlin compiler installed (`kotlinc` Version 2) ([check installation instructions](https://kotlinlang.org/docs/command-line.html#homebrew) if needed; SDKMAN should be the easiest one)
+
+- Kotlin compiler installed (`kotlinc` Version
+  2) ([check installation instructions](https://kotlinlang.org/docs/command-line.html#homebrew) if needed; SDKMAN should
+     be the easiest one)
 - Java Runtime Environment (JRE)
 
 #### Compiling and Running
@@ -97,4 +102,10 @@ java -jar Day04Test.jar
 
 ## About Advent of Code
 
-[Advent of Code](https://adventofcode.com/2025) is an annual event featuring daily programming puzzles throughout December, created by Eric Wastl.
+[Advent of Code](https://adventofcode.com/2025) is an annual event featuring daily programming puzzles throughout
+December, created by Eric Wastl.
+
+## Disclaimer
+
+All code is written by hand. AI has only been used to generate documentation because I'm lazy af. Everything else are my
+origin ideas and craftsmanship.
