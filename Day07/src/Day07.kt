@@ -98,7 +98,7 @@ class Automata(lines: List<String>) {
     when (field[coordinate]) {
       Cell.EMPTY -> {
         field[coordinate] = Cell.BEAM
-        return trickle(coordinate.copy(y = coordinate.y + 1))
+        splits += trickle(coordinate.copy(y = coordinate.y + 1))
       }
 
       Cell.SPLITTER -> {
