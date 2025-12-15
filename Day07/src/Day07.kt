@@ -1,3 +1,5 @@
+import kotlin.time.measureTime
+
 fun main() {
   Day07.run()
 }
@@ -8,11 +10,15 @@ object Day07 {
     val lines = Tools.readInputFile()
     val automata = Automata(lines)
 
-    val splits = automata.run()
+    val timelines: Long
+    measureTime {
+      timelines = automata.countTimelines()
+    }.also { println("Finding the timelines took ${it.inWholeNanoseconds / 1_000_000.0} ms.") }
+    val splits = automata.solveTrickles()
 
     automata.print()
 
-    println("There are $splits splits")
+    println("There are $splits splits and $timelines timelines")
   }
 }
 
@@ -41,7 +47,7 @@ object Day07 {
  *    downward without further action.
  *
  * The traversal stops when the beam moves outside the bounds of the field.  The
- * public function [run] initiates this traversal and returns the total number of
+ * public function [solveTrickles] initiates this traversal and returns the total number of
  * splits that were performed.  The [print] function may be used to display the
  * final state of the grid, showing empty cells, the start, splitter, and beam
  * cells with their corresponding characters.
@@ -57,20 +63,21 @@ class Automata(lines: List<String>) {
 
   init {
     width = lines[0].length
-    field = Array(height) { Array(width) { Cell.EMPTY } }
+    field = Array(height) { Array(width) { EmptyCell } }
 
     for ((y, row) in lines.withIndex()) {
       for ((x, column) in row.withIndex()) {
-        val cell = Cell.byChar(column)
+        val cellType = CellType.byChar(column)
+        val cell = Cell(cellType)
 
         field[y][x] = cell
 
-        if (cell == Cell.START) start = Coordinate(x, y + 1)
+        if (cellType == CellType.START) start = Coordinate(x, y + 1)
       }
     }
   }
 
-  fun run() =
+  fun solveTrickles() =
     trickle(start)
 
   /**
@@ -90,30 +97,55 @@ class Automata(lines: List<String>) {
    * @param coordinate the starting coordinate of the beam
    * @return the total number of split events that occurred while the beam propagated
    */
-  fun trickle(coordinate: Coordinate): Int {
+  private fun trickle(coordinate: Coordinate): Int {
     if (coordinate.x !in 0..<width || coordinate.y !in 0..<height) return 0
 
     var splits = 0
 
-    when (field[coordinate]) {
-      Cell.EMPTY -> {
-        field[coordinate] = Cell.BEAM
+    when (field[coordinate].type) {
+      CellType.EMPTY -> {
+        field[coordinate] = BeamCell
         splits += trickle(coordinate.copy(y = coordinate.y + 1))
       }
 
-      Cell.SPLITTER -> {
+      CellType.SPLITTER -> {
         splits++
         splits += trickle(coordinate.copy(x = coordinate.x - 1))
         splits += trickle(coordinate.copy(x = coordinate.x + 1))
       }
 
-      Cell.START,
-      Cell.BEAM -> {
-        // do nothing
-      }
+      CellType.START,
+      CellType.BEAM -> Unit
     }
 
     return splits
+  }
+
+  fun countTimelines() =
+    timelines(start)
+
+  private fun timelines(coordinate: Coordinate): Long {
+    if (coordinate.x !in 0..<width || coordinate.y !in 0..<height) return 1
+
+    val cell = field[coordinate]
+    return when (cell.type) {
+      CellType.EMPTY -> timelines(coordinate.copy(y = coordinate.y + 1))
+
+      CellType.SPLITTER -> {
+        val result: Long
+
+        if (cell.value == -1L) {
+          result = timelines(coordinate.copy(x = coordinate.x - 1)) +
+            timelines(coordinate.copy(x = coordinate.x + 1))
+          cell.value = result
+        } else
+          result = cell.value
+
+        result
+      }
+
+      else -> 0 // irrelevant for this problem
+    }
   }
 
   private operator fun Array<Array<Cell>>.get(coordinate: Coordinate) =
@@ -124,7 +156,12 @@ class Automata(lines: List<String>) {
   }
 
   fun print() {
-    field.map { row -> row.map { it.char }.joinToString("") }
+    field
+      .map { row ->
+        row
+          .map { it.type.char }
+          .joinToString("")
+      }
       .forEach { println(it) }
   }
 }
@@ -148,14 +185,19 @@ data class Coordinate(val x: Int, val y: Int)
  * The companion object contains a helper function that converts a character
  * into its corresponding [Cell] value.
  */
-enum class Cell(val char: Char) {
+enum class CellType(val char: Char) {
   EMPTY('.'),
   START('S'),
   SPLITTER('^'),
   BEAM('|');
 
   companion object {
-    fun byChar(c: Char): Cell =
-      Cell.entries.first { it.char == c }
+    fun byChar(c: Char) =
+      CellType.entries.first { it.char == c }
   }
 }
+
+data class Cell(val type: CellType, var value: Long = -1)
+
+val EmptyCell = Cell(CellType.EMPTY)
+val BeamCell = Cell(CellType.BEAM)
