@@ -124,6 +124,19 @@ class Automata(lines: List<String>) {
   fun countTimelines() =
     timelines(start)
 
+  /**
+   * Calculates the total number of timelines that can originate from the given coordinate.
+   *
+   * The method proceeds downwards until it encounters a non‑empty cell or goes out of bounds.
+   * For a cell of type `SPLITTER`, it recursively computes the timelines for the cells to the
+   * left and right of the splitter, sums the results, and stores the computed value in
+   * the cell’s `value` field to avoid repeated work. If the coordinate lies outside the
+   * bounds of the field, the method returns `1`, treating an exit from the grid as a
+   * single timeline.
+   *
+   * @param coordinate the coordinate from which to start counting timelines
+   * @return the total number of timelines that can be produced from this coordinate
+   */
   private fun timelines(coordinate: Coordinate): Long {
     if (coordinate.x !in 0..<width || coordinate.y !in 0..<height) return 1
 
@@ -183,7 +196,7 @@ data class Coordinate(val x: Int, val y: Int)
  *   processing of the grid.
  *
  * The companion object contains a helper function that converts a character
- * into its corresponding [Cell] value.
+ * into its corresponding [CellType] value.
  */
 enum class CellType(val char: Char) {
   EMPTY('.'),
@@ -192,11 +205,35 @@ enum class CellType(val char: Char) {
   BEAM('|');
 
   companion object {
+
+    /**
+     * Returns the [CellType] that corresponds to the specified character.
+     *
+     * The method searches the enum's entries for a constant whose `char` value matches
+     * the provided character and returns that constant. If no matching cell type
+     * is found, a `NoSuchElementException` is thrown.
+     *
+     * @param c the character representing a cell type
+     * @return the matching [CellType] instance
+     * @throws NoSuchElementException if the character does not correspond to any [CellType]
+     */
     fun byChar(c: Char) =
       CellType.entries.first { it.char == c }
   }
 }
 
+/**
+ * Represents a single cell within the beam propagation grid.
+ *
+ * The cell contains a [CellType] that defines its role in the simulation and an optional
+ * numeric value. The default value of `-1` signifies that the cell has not yet been
+ * assigned a specific value during processing.
+ *
+ * The type information is derived from the input representation where each cell is
+ * encoded by a single character. The value field can be updated dynamically as the
+ * algorithm traverses the grid, for example, to record the number of beams that have
+ * passed through the cell or other state information.
+ */
 data class Cell(val type: CellType, var value: Long = -1)
 
 val EmptyCell = Cell(CellType.EMPTY)
