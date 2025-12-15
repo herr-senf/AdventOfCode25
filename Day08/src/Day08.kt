@@ -1,29 +1,6 @@
 import java.io.File
 import kotlin.math.sqrt
 
-val example = listOf(
-  "162,817,812",
-  "57,618,57",
-  "906,360,560",
-  "592,479,940",
-  "352,342,300",
-  "466,668,158",
-  "542,29,236",
-  "431,825,988",
-  "739,650,466",
-  "52,470,668",
-  "216,146,977",
-  "819,987,18",
-  "117,168,530",
-  "805,96,715",
-  "346,949,466",
-  "970,615,88",
-  "941,993,340",
-  "862,61,35",
-  "984,92,344",
-  "425,690,689",
-)
-
 fun main() {
   Day08.run()
 }
@@ -32,7 +9,7 @@ object Day08 {
 
   fun run() {
     val inputs = readInputFile()
-//    val inputs = example
+//    val inputs = readExampleFile()
     val nodes = generateNodes(inputs)
     val edges = generateEdges(nodes)
     val circuits = generateCircuits(edges, 1000)
@@ -54,6 +31,10 @@ object Day08 {
    */
   private fun readInputFile(): List<String> =
     File("Day08/src/input.txt")
+      .readLines()
+
+  private fun readExampleFile(): List<String> =
+    File("Day08/src/example.txt")
       .readLines()
 
   /**
@@ -82,7 +63,6 @@ object Day08 {
       }
       .map { Coordinate(it[0], it[1], it[2]) }
       .map { Node(it) }
-      .toList()
 
   /**
    * Generates all possible edges between the supplied nodes and sorts them by distance.
