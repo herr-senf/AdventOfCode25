@@ -8,168 +8,63 @@ fun main() {
 object Day08 {
 
   fun run() {
-    val inputs = readInputFile()
-//    val inputs = readExampleFile()
-    val nodes = generateNodes(inputs)
-    val edges = generateEdges(nodes)
-    val circuits = generateCircuits(edges, 1000)
+    val lines = readInputFile()//"example.txt")
+    val nodes = convertLinesToCoordinates(lines)
+    val edges = createSortedEdges(nodes)
+    val result = mergeCircuits(edges, 1000)
 
-    val top3 = circuits
-      .map { it.size }
-      .sortedByDescending { it }
-      .take(3)
+    val product = result.map { it.size }.reduce { acc, i -> acc * i }
 
-    top3.forEach { println("Circuit size: $it") }
-    val result = top3.reduce { s1, s2 -> s1 * s2 }
-
-    println("The product of the largest 3 circuits is $result")
+    println("The product by length of the 3 largest circuits is $product")
+    println("The circuits are: ${result.map { it.size }}")
   }
 
-  /**
-   * Reads the input file located at "Day08/src/input.txt" and returns its contents as a list of strings,
-   * where each element represents one line of the file.
-   *
-   * @return A list of strings containing each line from the input file.
-   */
-  private fun readInputFile(): List<String> =
-    File("Day08/src/input.txt")
-      .readLines()
+  private fun mergeCircuits(edges: List<Edge>, count: Int = 10): List<Circuit> {
+    val stack = ArrayDeque(edges)
+    val mergedCircuits = mutableListOf<Circuit>()
 
-  private fun readExampleFile(): List<String> =
-    File("Day08/src/example.txt")
-      .readLines()
+    stack
+      .take(count)
+      .forEach { edge ->
+        val circuits = mergedCircuits.filter { it.contains(edge) }
 
-  /**
-   * Creates a list of [Node] objects from a list of strings, where each string
-   * contains three comma‑separated integer values representing the X, Y, and
-   * Z coordinates of a point in 3‑D space.
-   *
-   * The method processes each line as follows:
-   * 1. Splits the string by commas.
-   * 2. Converts each substring to an integer.
-   * 3. Builds a [Coordinate] from the three integers.
-   * 4. Wraps the coordinate in a [Node].
-   *
-   * The resulting nodes are returned as a new list.
-   *
-   * @param input a list of strings, each string formatted as `"x,y,z"` where
-   *   `x`, `y`, and `z` are integer values.
-   * @return a list of [Node] instances corresponding to the input coordinates.
-   */
-  private fun generateNodes(input: List<String>) =
-    input
+        if (circuits.isEmpty())
+          mergedCircuits.add(Circuit(edge.first, edge.second))
+        else if (circuits.size == 1)
+          circuits.first().add(edge)
+        else {
+          circuits.flatMap { it.nodes }
+            .let { mergedCircuits.add(Circuit(it)) }
+
+          circuits.forEach { mergedCircuits.remove(it) }
+        }
+      }
+
+    return mergedCircuits
+      .sortedByDescending { it.size }
+      .take(3)
+  }
+
+  private fun createSortedEdges(nodes: List<Node>): List<Edge> =
+    nodes
+      .flatMapIndexed { index, first ->
+        nodes
+          .drop(index + 1)
+          .map { second -> Edge(first, second) }
+      }
+      .sortedBy { it.length }
+
+  private fun convertLinesToCoordinates(lines: List<String>): List<Node> =
+    lines
       .map { line ->
         line
           .split(",")
           .map { it.toInt() }
       }
-      .map { Coordinate(it[0], it[1], it[2]) }
-      .map { Node(it) }
+      .map { Node(it[0], it[1], it[2]) }
 
-  /**
-   * Generates all possible edges between the supplied nodes and sorts them by distance.
-   *
-   * For each unique pair of nodes an [Edge] is created with the distance computed
-   * from their coordinates. The resulting list is sorted in ascending order of the
-   * edge distances, making it suitable for algorithms that require a priority
-   * ordering such as minimum spanning tree construction.
-   *
-   * @param nodes a list of [Node] instances that will be connected pairwise
-   * @return a list of [Edge] objects, sorted by the `distance` property
-   */
-  private fun generateEdges(nodes: List<Node>) =
-    nodes
-      .flatMapIndexed { i, a ->
-        nodes
-          .drop(i + 1)
-          .map { b -> Edge(a, b, a.coordinate.dist(b.coordinate)) }
-      }
-      .sortedBy { it.distance }
-
-  /**
-   * Builds a list of circuits from a sorted list of edges.
-   *
-   * The method processes edges from the given `sortedEdges` list, up to the
-   * specified `processedCount`.  Each edge is examined in order, and the
-   * connecting nodes are used to create or merge circuits as follows:
-   *
-   * * If neither endpoint is part of an existing circuit, a new circuit
-   *   is created containing the two nodes.
-   * * If both endpoints belong to different circuits, the two circuits
-   *   are merged into a single circuit that contains all nodes from both.
-   * * If only one endpoint is part of a circuit, the other node is added
-   *   to that circuit.
-   *
-   * The algorithm stops when either the stack of edges is exhausted or
-   * the number of processed edges reaches `processedCount`.
-   *
-   * @param sortedEdges The list of edges to process, sorted by their
-   *   distance or any other criterion that dictates the order of
-   *   processing.
-   * @param processedCount The maximum number of edges to process from
-   *   the list.
-   * @return A list of [Circuit] objects that represent the
-   *   interconnected nodes discovered during processing.
-   */
-  private fun generateCircuits(sortedEdges: List<Edge>, processedCount: Int): List<Circuit> {
-    val stack = ArrayDeque(sortedEdges)
-    val circuits = mutableListOf<Circuit>()
-
-    var edgesProcessed = 0
-    while (stack.isNotEmpty() && edgesProcessed < processedCount) {
-      val shortest = stack.removeFirst()
-
-      val start = shortest.start
-      val circuitStart = start.circuit
-      val end = shortest.end
-      val circuitEnd = end.circuit
-
-      when {
-        circuitStart == null && circuitEnd == null -> {
-          val circuit = Circuit(start, end)
-          circuits.add(circuit)
-        }
-
-        circuitStart != null && circuitEnd != null -> {
-          // both junctions are part of a circuit; if it's the same, we can ignore them
-          if (circuitStart != circuitEnd) {
-            // start and end junction are already part of different circuits; let's merge those two circuits
-            circuits.remove(circuitStart)
-            circuits.remove(circuitEnd)
-            val circuit = Circuit(*circuitStart.nodes, *circuitEnd.nodes)
-            circuits.add(circuit)
-          }
-        }
-
-        circuitStart != null -> circuitStart += end
-        circuitEnd != null -> circuitEnd += start
-
-        else -> error("Unexpected things happened: $shortest")
-      }
-
-      if ((edgesProcessed + 1) % 50 == 0) {
-        println("After ${edgesProcessed + 1} edges:")
-        println("Circuits found: ${circuits.size}")
-        circuits
-          .sortedByDescending { it.size }
-          .take(3)
-          .map { it.size }
-          .also { print(" $it = ") }
-          .reduce { l, r -> l * r }
-          .let { println(it) }
-        println("Edges left: ${stack.size}")
-        println()
-      }
-
-      edgesProcessed++
-    }
-
-    println("Edges processed: $edgesProcessed")
-    println("Circuits found: ${circuits.size}")
-    println("Edges left: ${stack.size}")
-
-    return circuits
-  }
+  private fun readInputFile(filename: String = "input.txt"): List<String> =
+    File("Day08/src/$filename").readLines()
 }
 
 /**
@@ -180,7 +75,7 @@ object Day08 {
  * coordinate and another [Coordinate] instance. The result is returned as a
  * [Double].
  */
-data class Coordinate(val x: Int, val y: Int, val z: Int) {
+data class Node(val x: Int, val y: Int, val z: Int) {
 
   /**
    * Calculates the Euclidean distance from this coordinate to the specified [coordinate].
@@ -188,7 +83,7 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
    * @param coordinate the target coordinate to which the distance is calculated
    * @return the Euclidean distance as a [Double]
    */
-  fun dist(coordinate: Coordinate): Double =
+  fun dist(coordinate: Node): Double =
     sqrt((this.x - coordinate.x).sqr() + (this.y - coordinate.y).sqr() + (this.z - coordinate.z).sqr())
 
   /**
@@ -204,98 +99,26 @@ data class Coordinate(val x: Int, val y: Int, val z: Int) {
     (this * this).toDouble()
 }
 
-/**
- * Represents a collection of interconnected [Node] objects that form a circuit.
- *
- * A circuit manages the membership of its nodes, ensuring that each node belongs to at most one circuit.
- * When a node is added to a circuit, it is automatically removed from any previous circuit,
- * and its [Circuit] reference is updated accordingly. Removing a node clears its
- * reference, allowing it to be reused elsewhere.
- *
- * @property nodes An array containing all nodes currently part of the circuit.
- * @property size The number of nodes contained in the circuit.
- *
- * @constructor Creates a circuit containing the given nodes. Each node is added
- * sequentially, applying the same rules as [add].
- */
-class Circuit(vararg nodes: Node) {
+data class Edge(val first: Node, val second: Node) {
+  val length: Double by lazy { first.dist(second) }
+}
 
-  private val _nodes: MutableSet<Node> = mutableSetOf()
-  val nodes: Array<Node>
-    get() = _nodes.toTypedArray()
+class Circuit(vararg node: Node) {
+
+  constructor(node: Collection<Node>) : this(*node.toTypedArray())
+
+  private val _nodes = mutableSetOf(*node)
+  val nodes: Set<Node>
+    get() = _nodes
 
   val size: Int
     get() = _nodes.size
 
-  init {
-    nodes.forEach(::add)
-  }
+  fun contains(edge: Edge) =
+    _nodes.contains(edge.first) || _nodes.contains(edge.second)
 
-  operator fun plusAssign(node: Node) {
-    add(node)
-  }
-
-  operator fun minusAssign(node: Node) {
-    remove(node)
-  }
-
-  /**
-   * Adds the specified [node] to this circuit.
-   *
-   * If the node is already part of this circuit, the call has no effect.
-   * If the node belongs to another circuit, it is first removed from that circuit
-   * before being added to this one. After the operation, the node's
-   * [Node.circuit] reference points to this circuit.
-   *
-   * @param node the node to add to the circuit
-   */
-  fun add(node: Node) {
-    if (node.circuit === this) return
-
-    if (node.circuit != null)
-      node.circuit?.let { it -= node }
-
-    this._nodes.add(node)
-    node.circuit = this
-  }
-
-  /**
-   * Removes the specified [node] from this circuit.
-   *
-   * The node’s [Node.circuit] reference is cleared, and the node is removed from the internal collection.
-   *
-   * @param node the node to remove from the circuit
-   */
-  fun remove(node: Node) {
-    node.circuit = null
-    this._nodes.remove(node)
+  fun add(edge: Edge) {
+    _nodes.add(edge.first)
+    _nodes.add(edge.second)
   }
 }
-
-/**
- * Represents a point that can participate in a [Circuit].
- *
- * A node is identified by a three‑dimensional coordinate.
- * It may belong to a single circuit at a time. Adding the node to a circuit
- * automatically updates its `circuit` reference, and if the node was already
- * part of another circuit, it is removed from that previous circuit before the
- * new assignment.
- *
- * Removing a node from a circuit clears its `circuit` reference.
- */
-data class Node(val coordinate: Coordinate) {
-  var circuit: Circuit? = null
-}
-
-/**
- * Represents a directed connection between two [Node] instances.
- *
- * Each `Edge` holds a reference to a starting node, an ending node, and the
- * distance between them. The class is a data class, so it automatically
- * provides value-based equality and a convenient `copy` method.
- *
- * This type is typically used to model the relationships between nodes in
- * graph‑based structures such as circuits or maps, where the distance
- * indicates the weight or length of the link.
- */
-data class Edge(val start: Node, val end: Node, val distance: Double)
