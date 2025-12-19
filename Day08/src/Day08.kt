@@ -151,12 +151,12 @@ data class Node(val x: Long, val y: Long, val z: Long) {
     sqrt((this.x - coordinate.x).sqr() + (this.y - coordinate.y).sqr() + (this.z - coordinate.z).sqr())
 
   /**
-   * Calculates the square of an integer.
+   * Computes the square of the [Long] value and returns the result as a [Double].
    *
-   * This extension function multiplies the integer by itself and returns the
-   * result as a [Double].
+   * This function is a private extension for the [Long] type and is used in operations
+   * where calculations involving squares of [Long] values are required.
    *
-   * @receiver the integer to be squared
+   * @receiver the [Long] value to be squared
    * @return the square of the receiver as a [Double]
    */
   private fun Long.sqr() =
