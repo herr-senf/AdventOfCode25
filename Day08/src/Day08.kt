@@ -8,10 +8,10 @@ fun main() {
 object Day08 {
 
   fun run() {
-    val lines = readInputFile()//"example.txt")
+    val lines = readInputFile("example.txt")
     val nodes = convertLinesToCoordinates(lines)
     val edges = createSortedEdges(nodes)
-    val result = mergeCircuits(edges, 1000)
+    val result = mergeCircuits(edges, 10)
 
     val product = result.map { it.size }.fold(1) { acc, size -> acc * size }
 
@@ -27,6 +27,7 @@ object Day08 {
       .forEach { edge ->
         val circuits = mergedCircuits.filter { it.contains(edge) }
 
+        // Adds or merges circuits based on edge membership
         when {
           circuits.isEmpty() -> mergedCircuits.add(Circuit(edge.first, edge.second))
 
@@ -62,7 +63,7 @@ object Day08 {
       .map { line ->
         line
           .split(",")
-          .map { it.toInt() }
+          .map { it.toLong() }
       }
       .map { Node(it[0], it[1], it[2]) }
 
@@ -78,7 +79,7 @@ object Day08 {
  * coordinate and another [Coordinate] instance. The result is returned as a
  * [Double].
  */
-data class Node(val x: Int, val y: Int, val z: Int) {
+data class Node(val x: Long, val y: Long, val z: Long) {
 
   /**
    * Calculates the Euclidean distance from this coordinate to the specified [coordinate].
@@ -98,7 +99,7 @@ data class Node(val x: Int, val y: Int, val z: Int) {
    * @receiver the integer to be squared
    * @return the square of the receiver as a [Double]
    */
-  private fun Int.sqr() =
+  private fun Long.sqr() =
     (this * this).toDouble()
 }
 
