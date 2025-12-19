@@ -14,11 +14,13 @@ object Day08 {
     val edges = generateEdges(nodes)
     val circuits = generateCircuits(edges, 1000)
 
-    val result = circuits
+    val top3 = circuits
       .map { it.size }
       .sortedByDescending { it }
       .take(3)
-      .reduce { s1, s2 -> s1 * s2 }
+
+    top3.forEach { println("Circuit size: $it") }
+    val result = top3.reduce { s1, s2 -> s1 * s2 }
 
     println("The product of the largest 3 circuits is $result")
   }
@@ -145,8 +147,26 @@ object Day08 {
         else -> error("Unexpected things happened: $shortest")
       }
 
+      if ((edgesProcessed + 1) % 50 == 0) {
+        println("After ${edgesProcessed + 1} edges:")
+        println("Circuits found: ${circuits.size}")
+        circuits
+          .sortedByDescending { it.size }
+          .take(3)
+          .map { it.size }
+          .also { print(" $it = ") }
+          .reduce { l, r -> l * r }
+          .let { println(it) }
+        println("Edges left: ${stack.size}")
+        println()
+      }
+
       edgesProcessed++
     }
+
+    println("Edges processed: $edgesProcessed")
+    println("Circuits found: ${circuits.size}")
+    println("Edges left: ${stack.size}")
 
     return circuits
   }
