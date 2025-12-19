@@ -13,30 +13,33 @@ object Day08 {
     val edges = createSortedEdges(nodes)
     val result = mergeCircuits(edges, 1000)
 
-    val product = result.map { it.size }.reduce { acc, i -> acc * i }
+    val product = result.map { it.size }.fold(1) { acc, size -> acc * size }
 
     println("The product by length of the 3 largest circuits is $product")
     println("The circuits are: ${result.map { it.size }}")
   }
 
   private fun mergeCircuits(edges: List<Edge>, count: Int = 10): List<Circuit> {
-    val stack = ArrayDeque(edges)
     val mergedCircuits = mutableListOf<Circuit>()
 
-    stack
+    edges
       .take(count)
       .forEach { edge ->
         val circuits = mergedCircuits.filter { it.contains(edge) }
 
-        if (circuits.isEmpty())
-          mergedCircuits.add(Circuit(edge.first, edge.second))
-        else if (circuits.size == 1)
-          circuits.first().add(edge)
-        else {
-          circuits.flatMap { it.nodes }
-            .let { mergedCircuits.add(Circuit(it)) }
+        when {
+          circuits.isEmpty() -> mergedCircuits.add(Circuit(edge.first, edge.second))
 
-          circuits.forEach { mergedCircuits.remove(it) }
+          circuits.size == 1 -> circuits[0].add(edge)
+
+          circuits.size == 2 -> {
+            val newCircuit = Circuit(circuits[0].nodes + circuits[1].nodes)
+            mergedCircuits.add(newCircuit)
+
+            circuits.forEach { mergedCircuits.remove(it) }
+          }
+
+          else -> error("More than 2 circuits contain the edge $edge")
         }
       }
 
